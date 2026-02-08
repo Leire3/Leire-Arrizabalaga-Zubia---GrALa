@@ -25,7 +25,7 @@ from skorch import NeuralNetRegressor
 from gplearn.functions import make_function
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee_calculator_m, knee_calculator_p, knee
+from knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
 
 #############################
 #       OROKORRAK
@@ -201,10 +201,10 @@ def data_loading(dataset):
                 df_battery = knee_calculator_karga(2,3.6)
             elif dataset == "NASA_deskarga":
                 df_battery = knee_calculator(2,3.6)
-            elif dataset == "Mendeley":
-                df_battery = knee_calculator_m()
-            elif dataset == "Zenodo":
-                df_battery = knee_calculator_p(2.5,4.2)
+            # elif dataset == "Mendeley":
+            #     df_battery = knee_calculator_m()
+            # elif dataset == "Zenodo":
+            #     df_battery = knee_calculator_p(2.5,4.2)
             
             if os.path.exists(charge_policies):
                 df_battery = load_intesities(dataset)

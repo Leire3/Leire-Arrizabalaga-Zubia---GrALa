@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.utils import get_args_parser, prediction, data_loading
+from utils import get_args_parser, prediction, data_loading
 
 
 class Knee_Curve:

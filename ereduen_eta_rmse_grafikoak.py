@@ -25,7 +25,7 @@ from skorch import NeuralNetRegressor
 from matplotlib.patches import Patch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
+from knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
 
 ########################################################
 #         RF / XGBOOST / NN grafikoak   100ziklo hartuz
