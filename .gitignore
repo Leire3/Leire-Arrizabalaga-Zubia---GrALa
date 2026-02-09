@@ -1,2 +1,6 @@
 .venv/
 *.csv
+*.png
+*.pkl
+src/data_reading.py
+utils/utils_old.py
