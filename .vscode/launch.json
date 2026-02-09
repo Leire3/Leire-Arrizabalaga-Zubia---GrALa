@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    {
+            "name": "Fitxategia Exekutatu: utils.py",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "./utils.py",
+            "console": "integratedTerminal"
+        },
+    {
+            "name": "Fitxategia Exekutatu: knee_calculator_cycle.py",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "./knee_calculator_cycle.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Fitxategia Exekutatu: ereduen_eta_rmse_grafikoak.py",
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "./ereduen_eta_rmse_grafikoak.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "cut of voltage to predict knee_point (DESKARGA)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./src/knee_evolution_battery.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["--action", "predict_knee", "--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
+        },
+        {
+            "name": "cut of voltage to predict knee_point (KARGA)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./src/knee_evolution_battery.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["--action", "predict_knee", "--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
+        },
+        {
+            "name": "cut of voltage to predict cycle_life (DESKARGA)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./src/knee_evolution_battery.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["--action", "cycle_life", "--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
+        },
+        {
+            "name": "cut of voltage to predict cycle_life (KARGA)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./src/knee_evolution_battery.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["--action", "cycle_life", "--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
+        }
+    ]
+}
