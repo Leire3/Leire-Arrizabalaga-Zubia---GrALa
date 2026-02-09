@@ -32,7 +32,7 @@
             "program": "./src/knee_evolution_battery.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--action", "predict_knee", "--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
+            "args": ["--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
         },
         {
             "name": "cut of voltage to predict knee_point (KARGA)",
@@ -41,7 +41,7 @@
             "program": "./src/knee_evolution_battery.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--action", "predict_knee", "--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
+            "args": ["--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "knee_point"]
         },
         {
             "name": "cut of voltage to predict cycle_life (DESKARGA)",
@@ -50,7 +50,7 @@
             "program": "./src/knee_evolution_battery.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--action", "cycle_life", "--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
+            "args": ["--dataset", "NASA_deskarga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
         },
         {
             "name": "cut of voltage to predict cycle_life (KARGA)",
@@ -59,7 +59,7 @@
             "program": "./src/knee_evolution_battery.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--action", "cycle_life", "--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
+            "args": ["--dataset", "NASA_karga", "--input", "cut-of-voltage", "--to_predict", "cycle_life"]
         }
     ]
 }

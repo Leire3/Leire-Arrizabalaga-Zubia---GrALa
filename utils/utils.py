@@ -30,8 +30,6 @@ def get_args_parser() -> argparse.ArgumentParser:
     
     parser.add_argument("--dataset", type=str, default="NASA_deskarga", required= True, choices=["NASA_deskarga", "NASA_karga"])
     # NASAren kasurako:
-    parser.add_argument("--action", type=str, default="predict_knee", choices=["print_curves", "predict_curves", "predict_knee", "cycle_life"])
-    parser.add_argument("--pol_order", type=int, default=20, required= False)
     parser.add_argument("--group", type=str, default=None, required= False, choices=["fast_charging", "two_steps"])
     parser.add_argument("--input", type=str, default="knee-charge", required= False, choices=["cut-of-voltage", "knee-charge", "knee_discharge"])
     parser.add_argument("--to_predict", type=str, default="knee_point", required= False, choices=["cycle_life", "knee_point"])
