@@ -2,10 +2,10 @@
 
 ## Ikasketa automatikoaren aplikazioa litio-ioizko baterien degradazioa aurresateko.
 
-Proiektu honek Litio-ioizko baterien degradazioa estimatzeko eredu bat garatzen du, karga- eta deskarga-kurbetako datuak erabiliz. Lan hau Gradu Amaierako Lanaren (GrAL) parte da.
+Proiektu honetan litio-ioizko baterien degradazioa estimatzeko eredua garatzen da, karga- eta deskarga-kurbetako datuak erabiliz. Lan hau Gradu Amaierako Lanaren (GrAL) parte da.
 
 ## Deskribapena
-Proiektuaren helburua baterien zahartze-prozesua aztertzea da, ikasketa automatikoko hiru algoritmo (Random Forest Erregresioa, Extreme Gradient Boosting eta Sare neuronalak) erabiliz. Horretarako, kurben ezaugarrien bidez, ereduak osasun-egoeraren degradazioa iragartzen ikasten du.
+Proiektuaren helburua baterien degradazioa aztertzea da, ikasketa automatikoko hiru algoritmo (Random Forest Erregresioa, Extreme Gradient Boosting eta Sare neuronalak) erabiliz. Horretarako, kurben ezaugarrien bidez, ereduak osasun-egoeraren degradazioa iragartzen ikasten du.
 
 ## Proiektuaren Egitura
 Biltegi honetako fitxategiak honela antolatuta daude:
