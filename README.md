@@ -10,9 +10,9 @@ Proiektuaren helburua baterien zahartze-prozesua aztertzea da, ikasketa automati
 ## Proiektuaren Egitura
 Biltegi honetako fitxategiak honela antolatuta daude:
 * **src/**: Proiektuaren kode nagusia
-    **knee_evolution_battery.py** Kode nagusia da hau. Honek iragarpen-prozesu osoa kudeatzen du: exekuzio-parametroak jaso, baterien datu-basea kargatu eta osasun-egoeraren estimazio-eredua exekutatzen du.
-    **knee_calculator_cycle.py** Kode honetan hainbat funtzio ageri dira, funtzio nagusienak karga- zein deskarga-prozesuetarako knee puntuaren kalkulua egitean datza. Horrez gain, beste hainbat funtzio daude: knee eta cut-off voltage puntuak irudikatzeko, ziklo baten irudikapena egiteko... 
-    **ereduen_eta_rmse_grafikoak.py** Kode honen bidez GrALerako beharrezkoak izan diren hainbat grafiko gehigarri egiten dira.
+    * **knee_evolution_battery.py** Kode nagusia da hau. Honek iragarpen-prozesu osoa kudeatzen du: exekuzio-parametroak jaso, baterien datu-basea kargatu eta osasun-egoeraren estimazio-eredua exekutatzen du.
+    * **knee_calculator_cycle.py** Kode honetan hainbat funtzio ageri dira, funtzio nagusienak karga- zein deskarga-prozesuetarako knee puntuaren kalkulua egitean datza. Horrez gain, beste hainbat funtzio daude: knee eta cut-off voltage puntuak irudikatzeko, ziklo baten irudikapena egiteko... 
+    * **ereduen_eta_rmse_grafikoak.py** Kode honen bidez GrALerako beharrezkoak izan diren hainbat grafiko gehigarri egiten dira.
 * **utils/**: Kode honetan baterien datu-basearen prozesamendua eta ikasketa automatikoko ereduen (Random Forest Erregresioa, XGBoost eta Sare nueronalak) iragarpenak egiten ditu.
 * **requirements.txt**: Kodea exekutatzeko beharrezkoak diren Python liburutegien zerrenda.
 * **.vscode/**: Kodea exekutatzeko parametroak zehazten ditu.
