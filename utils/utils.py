@@ -19,7 +19,7 @@ from sklearn.model_selection import GridSearchCV
 from xgboost import XGBRegressor
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
+from src.knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
 
 #############################
 #       OROKORRAK

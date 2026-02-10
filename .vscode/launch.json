@@ -8,21 +8,21 @@
             "name": "Fitxategia Exekutatu: utils.py",
             "type": "debugpy", 
             "request": "launch",
-            "program": "./utils.py",
+            "program": "./utils/utils.py",
             "console": "integratedTerminal"
         },
     {
             "name": "Fitxategia Exekutatu: knee_calculator_cycle.py",
             "type": "debugpy", 
             "request": "launch",
-            "program": "./knee_calculator_cycle.py",
+            "program": "./src/knee_calculator_cycle.py",
             "console": "integratedTerminal"
         },
         {
             "name": "Fitxategia Exekutatu: ereduen_eta_rmse_grafikoak.py",
             "type": "debugpy", 
             "request": "launch",
-            "program": "./ereduen_eta_rmse_grafikoak.py",
+            "program": "./src/ereduen_eta_rmse_grafikoak.py",
             "console": "integratedTerminal"
         },
         {

@@ -1,34 +1,17 @@
-import argparse
-import torch
-import shap
 import os, sys
 import glob
-import random
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import torch.nn as nn
-import torch.optim as optim
 
-from sklearn.ensemble import RandomForestRegressor
-from gplearn.genetic import SymbolicRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import TensorDataset, DataLoader
-from xgboost import XGBRegressor
-from sklearn.metrics import root_mean_squared_error, r2_score
-from sklearn.model_selection import GridSearchCV
-from xgboost import XGBRegressor
-from skorch import NeuralNetRegressor
-from matplotlib.patches import Patch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from knee_calculator_cycle import knee_calculator, knee_calculator_karga, knee
+from src.knee_calculator_cycle import  knee
 
 ########################################################
-#         RF / XGBOOST / NN grafikoak   100ziklo hartuz
+#         RF / XGBOOST / FNN grafikoak   100ziklo hartuz
 ########################################################
 
 ########################
@@ -593,7 +576,7 @@ def knee_point_diferentzia_erlatiboa():
     plt.savefig(path)
     return df_knees_konparaketa
 
-knee_point_diferentzia_erlatiboa()
+# knee_point_diferentzia_erlatiboa()
 
 
 #################################################################
@@ -623,21 +606,3 @@ def azken_zikloa():
 
 # azken_zikloa()
 
-def azken_zikloa_clean():
-    file_path = './data/processed/NASA/NASA_karga/DataSetRulEstimation_all_new.pkl'
-    df_all_batteries = pd.read_pickle(file_path)
-    
-    # 2. Bateria bakoitzeko azken zikloa kalkulatu
-    last_cycles = df_all_batteries.groupby('bat_name')['cycle'].max()
-
-    # 3. Bateria bakoitzaren emaitzak ikusi eta baldintza egiaztatu
-    for bat_name, last_cycle in last_cycles.items():
-        output_msg = f'Bateria: {bat_name} - Azken zikloa: {last_cycle}'
-        
-        # BALDINTZA: 200 baino txikiagoa bada
-        if last_cycle < 200:
-            print(f'{output_msg} --> KONTUZ: Ziklo gutxiegi!')
-        else:
-            print(output_msg)
-
-# azken_zikloa_clean()

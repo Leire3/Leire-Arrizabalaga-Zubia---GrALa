@@ -374,6 +374,8 @@ def knee_calculator(cut_off_down, cut_off_up):
         
     # Amaierako DataFrame-a
     df_clean = pd.DataFrame(clean_data, columns=['bat_name', 'cycle', 'knee', 'Q_value', 'max_Qd', 'min_Qd','mean_V', 'std_V', 'max_I_charge', 'min_I_charge', 'max_I_discharge', 'min_I_discharge', 'VQ_ratio_mean', 'VQ_ratio_std', 'VQ_ratio_median'])
+    path = './data/processed/NASA/NASA_deskarga/'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     df_clean.to_pickle('./data/processed/NASA/NASA_deskarga/DataSetRulEstimation_all_new.pkl')
 
     return df_clean
@@ -411,15 +413,8 @@ def knee_calculator_200_knee_cof(cut_off_down, cut_off_up):
         
         irudikatzeko_zikloak = sorted(list(irudikatzeko_zikloak_multzoa))
 
-        battery_knees = []                                          # Codo del ciclo de descarga
-        problematic_cycles = []                                     # Ciclo con valores raros
-        cycle_numbers = []                                          # Número de ciclos
-        _Q = []                                                     # Capacidad en el cut-off voltage
-        max_Qd, min_Qd = [], []                                     # Capacidades max/min
-        mean_V, std_V = [], []                                      # Voltage mean/std
-        max_I_charge, min_I_charge = [], []                         # Current max/min (during charge)
-        max_I_discharge, min_I_discharge = [], []                   # Current max/min (during discharge)
-        VQ_ratio_mean, VQ_ratio_std, VQ_ratio_median = [],[],[]          # Cambio de V en una disminución del 5% de la capacidad 
+        battery_knees = []                                          
+        problematic_cycles = []                                     
 
         # Se estudia para cada 
         cutoff_label_added = False
@@ -717,7 +712,7 @@ def knee_kneepoint_calculator_deskarga(cut_off_down, cut_off_up):
                 battery_knees.append(knee_onset)
                 _Q.append(df['Qd'].max()) 
 
-        # --- OUTLIERREN TRATAMENDUA ---
+        # --- OUTLIERRAK ---
         outliers_1 = detect_outliers(battery_knees, 0.05, 1.07)
         
         y_c_raw = np.array(_Q)
@@ -733,7 +728,7 @@ def knee_kneepoint_calculator_deskarga(cut_off_down, cut_off_up):
         p_c = np.poly1d(coeffs_c)
         y_fit_c = p_c(x_c)
 
-        # Konfiantza tartea eta maskara (Zuzenduta: tamaina match egiteko)
+        # Konfiantza tartea eta maskara 
         residuals_c = y_c - y_fit_c
         residual_std_error_c = np.std(residuals_c, ddof=len(coeffs_c))
         conf_interval_c = 5 * residual_std_error_c
@@ -996,7 +991,8 @@ def knee_calculator_karga(cut_off_down, cut_off_up):
     
     # Azken  DataFrame-a
     df_clean = pd.DataFrame(clean_data, columns=['bat_name', 'cycle', 'knee', 'Q_value', 'max_Qc', 'min_Qc','mean_V', 'std_V', 'max_I_charge', 'min_I_charge', 'max_I_discharge', 'min_I_discharge'])
-    
+    path = './data/processed/NASA/NASA_karga/'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     df_clean.to_pickle('./data/processed/NASA/NASA_karga/DataSetRulEstimation_all_new.pkl')
 
     return df_clean
@@ -1330,340 +1326,3 @@ def ziklo(ziklo_zenbakia=10):
 
     return
 
-
-##############################
-# Kurba leundu edo ez leundu erabakitzen duena (AURRERAGO!!!)
-##############################
-
-'''
-def knee_calculator_karga_leundua_irudikatu(cut_off_down, cut_off_up):
-    
-    allfiles = glob.glob('./data/processed/NASA/*.csv') 
-    
-    # ------------------ PARAMETROAK ------------------
-    # SG PARAMETROAK (EGOKITU BEHAR IZAN DITZAKEZU)
-    window_length = 11  # Leunketa-puntuen kopurua (beti bakoitia)
-    polyorder = 3       # Polinomioaren maila
-    
-    
-    for indfile in range(len(allfiles)):    # Bateria bakoitzerako
-        plt.clf()
-        print('Hau prozesatzen: '+ allfiles[indfile])
-        
-        # Datuak kargatu
-        df_temp = pd.read_csv(allfiles[indfile], sep=',', index_col=None)
-        df_battery = df_temp.loc[:, ~df_temp.columns.str.contains("Unnamed")]
-        bat_ind = allfiles[indfile].split(os.sep)[-1].split('_')[0]
-
-        # Koloreen definizioa
-        cmap = plt.cm.viridis 
-        colors = cmap(np.linspace(0, 1, len(df_battery.cycle.unique())))
-        
-        
-        # ------------------ ZIKLO BAKOITZEKO BUKLEA ------------------
-        for ind in df_battery.cycle.unique(): 
-            
-            df_cycle = df_battery[df_battery['cycle'] == ind]
-            df = df_cycle[df_cycle['I'] > 0] # Kargako datuak
-            df = df.reset_index(drop=True)
-            
-            
-            # DATU MINIMOA EGIAZTATU
-            if len(df['V']) < window_length:
-                print(f'Ziklo {ind}-ek datu gutxiegi ditu ({len(df["V"])}) SG aplikatzeko.')
-                continue # Hurrengo ziklora pasatu
-
-            
-            # --- MOZKETAK (CUT-OFF BALIOAK) APLIKATU ---
-            # 1. Beheko muga hautatu (V >= cut_off_down)
-            if (df['V'] >= cut_off_down).any():
-                first_index = df[df['V'] >= cut_off_down].index[0] 
-                df = df.loc[first_index:].reset_index(drop=True)
-            
-            # 2. Goiko muga moztu (V <= cut_off_up)
-            if (df['V'] > cut_off_up).any():
-                last_index = df[df['V'] <= cut_off_up].index[-1] if (df['V'] <= cut_off_up).any() else len(df)
-                df = df.loc[:last_index].reset_index(drop=True)
-            
-            
-            # --- SAVITZKY-GOLAY APLIKATU ---
-            
-            # Tentsioa (V) leundu (Kurba marrazteko)
-            if len(df['V']) >= window_length:
-                df['V_leundua'] = savgol_filter(df['V'], window_length, polyorder)
-            else:
-                # Moztu ondoren puntu gutxi geratu badira, SG ez aplikatu
-                df['V_leundua'] = df['V']
-            
-            
-            # --- GRAFIKOA MARRAZTU ---
-            if len(df['Qc']) > 1:
-                Q_plot = df['Qc']
-                V_plot = df['V_leundua'] # GARRANTZITSUA: V leundua marraztu
-
-                if ind == 1:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], label = 'Cycle 1 (Leundua)', linewidth=1)
-                elif ind == df_battery.cycle.unique()[-1]:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], label = f'Cycle {df_battery.cycle.unique()[-1]} (Leundua)', linewidth=1)
-                else:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], linewidth=0.5)
-
-        
-        # ------------------ BATERIAREN GRAFIKOA GORDE ------------------
-        plt.xlabel(r'$\text{Charge capacity (Q)}$', fontsize = 14)
-        plt.ylabel(r'$\text{Voltage (V)}$', fontsize=14)
-        plt.legend()
-        plt.tight_layout()
-        
-        output_dir = './results/data_cleaning_karga_leundua_irudikatu/'
-        os.makedirs(output_dir, exist_ok=True)
-        plt.savefig(f'{output_dir}{bat_ind}_leundua.png')
-
-    return
-
-#knee_calculator_karga_leundua_irudikatu(2,3.6)
-'''
-
-#--- PUNTUEN ARTEKO BATABESTEKOA HARTUZ -------
-def knee_calculator_karga_leundua(cut_off_down, cut_off_up, window_length):
-    clean_data = []
-    allfiles = glob.glob('./data/processed/NASA/*.csv')    
-    
-    for indfile in range(len(allfiles)):    # Bateria bakoitzerako
-        plt.clf()
-        print('Hau prozesatzen: '+ allfiles[indfile])
-        
-        # Datuak kargatu
-        df_temp = pd.read_csv(allfiles[indfile], sep=',', index_col=None)
-        df_battery = df_temp.loc[:, ~df_temp.columns.str.contains("Unnamed")]
-        bat_ind = allfiles[indfile].split(os.sep)[-1].split('_')[0]
-
-        #Zerrenda hutsak sortu
-        battery_knees = []                                          # Codo del ciclo de carga
-        problematic_cycles = []                                     # Ciclo con valores raros
-        cycle_numbers = []                                          # Número de ciclos
-        _Q = []                                                     # Capacidad en el cut-off voltage
-        max_Qc, min_Qc = [], []                                     # Capacidades max/min
-        mean_V, std_V = [], []                                      # Voltage mean/std
-        max_I_charge, min_I_charge = [], []                         # Current max/min (during charge)
-        max_I_discharge, min_I_discharge = [], []                   # Current max/min (during discharge)
-
-        # Koloreen definizioa
-        cmap = plt.cm.viridis 
-        colors = cmap(np.linspace(0, 1, len(df_battery.cycle.unique())))
-        
-        
-        # ------------------ ZIKLO BAKOITZERAKO BUKLEA ------------------
-        for ind in df_battery.cycle.unique(): 
-            
-            df_cycle = df_battery[df_battery['cycle'] == ind]
-            df = df_cycle[df_cycle['I'] > 0] # Kargako datuak
-            df = df.reset_index(drop=True)
-            
-            # -------- BATAZ BESTEKO HIGIKORRA (Moving average, MA) --------------
-            #window_length = 75  # window_length Batazbesteko Higikorra kalkulatzeko tamaina da
-            
-            if len(df['V']) < window_length: #Datu minimoa egiaztatu
-                #print(f'Ziklo {ind}-ek datu gutxiegi ditu ({len(df["V"])}) batazbestekoa kalkulatzeko. Hurrengora.')
-                continue # Hurrengo ziklora pasatu
-
-            
-            # --- MOZKETAK (CUT-OFF BALIOAK) APLIKATU ---
-            if (df['V'] >= cut_off_down).any():
-                first_index = df[df['V'] >= cut_off_down].index[0] 
-                df = df.loc[first_index:].reset_index(drop=True)
-            
-            if (df['V'] > cut_off_up).any():
-                last_index = df[df['V'] <= cut_off_up].index[-1] if (df['V'] <= cut_off_up).any() else len(df)
-                df = df.loc[:last_index].reset_index(drop=True)
-            
-            if (df['Qc'] > 1.1).any():
-                #print(f"!!! MOZKETA EGIN BEHAR DA Zikloan: {ind}")
-                #print(f"Zikloa: {ind}, azken Qc max: {df['Qc'].max()}")
-                last_index_Qc = df[df['Qc']>1.1].index[0] #Qc hori 1.1 balioa gainditzen duen lehen indizea aurkitu eta ondorengo datu guztiak moztu
-                df = df.loc[:last_index_Qc - 1].reset_index(drop=True) #Karga-ahalmena 1.1 baino handiagoa den balioa hartu baino lehenagora arte moztu
-                #print(f"Zikloa: {ind}, azken Qc max: {df['Qc'].max()}")
-                        
-            # --- BATAZ BESTEKO MUGIKORRA APLIKATU (V_batazbest) ---
-            
-            if len(df['V']) >= window_length:
-                # center=True erabiltzen dugu: leihoa puntuaren inguruan zentratzeko
-                # min_periods=1 erabiltzen dugu: nahiz eta hasieran datu nahikorik ez izan, leuntzea egiten du ahal den neurrian.
-                df['V_batazbestekoa'] = df['V'].rolling(window=window_length, center=True, min_periods=1).mean()
-            else:
-                df['V_batazbestekoa'] = df['V']
-            
-            # --- KNEE_PER_CYCLE2 FUNTZIOA ---
-            if len(df) >= 21: #Datu nahikoa?
-                # Ukondoaren X eta Y balio jaso knee grafikoan gehitzeko
-                knee_Q, knee_V = knee_per_cycle2(df, 'Qc', 'V') 
-                knee_leundua = knee_per_cycle(df, 'Qc', 'V_batazbestekoa')
-            else:
-                knee_Q, knee_V = np.nan, np.nan
-            #print(f'{ind} zikloan ukondoak: {knee_Q,knee_V} izatez, {knee_leundua} leundu ondoren')
-            # --- KNEE-POINT GRAFIKOAN MARRAZTU ---
-            #if not np.isnan(knee_Q) and not np.isnan(knee_V):
-                #plt.plot(knee_Q, knee_V, 'o', color='black', markersize=2) #Holan grafikuen ikusi zeike zenbateko galera dauen, hau da, kurba izengo da V_batazbestekoakin irudikaturikue, baine knee V-kin
-            #print(f"{ind} zikloaren ukondoa puntu honetan dago: ({knee_Q}, {knee_V})")
-
-            if len(df['Qc']) > 1:
-                Q_plot = df['Qc']
-                V_plot = df['V_batazbestekoa'] # Orain V_batazbestekoa erabiltzen dugu
-                
-                #Outlierrak identifikatzeko
-                if len(df['V']) < 20:                                                           # Si una vez acortado tiene muy pocos registros se elimina
-                    print('Este ciclo está mal registrado, hay que eliminarlo')
-                    problematic_cycles.append(ind)
-                    battery_knees.append(np.nan)
-                elif (df.loc[df['V'] == cut_off_up, 'Qc'] <= 0.2).any():                      # V-ren balioa cut_off_up daniean, Qc < 0.2 baldin bada, anomalia
-                    print('Este ciclo está mal registrado, hay que eliminarlo')
-                    add_plot = False
-                    problematic_cycles.append(ind)
-                    battery_knees.append(np.nan)
-                else:                                                                           # Si no, se calcula el codo
-                    battery_knees.append(knee_leundua)
-                
-                # Se guarda la información del ciclo:
-                cycle_numbers.append(ind)
-                _Q.append(df['Qc'].max())   
-                max_Qc.append(max(df['Qc'])) 
-                min_Qc.append(min(df['Qc']))
-
-                # Características del voltaje
-                mean_V.append(df.V.mean())
-                std_V.append(df.V.std())  
-                # De la corriente                   
-                max_I_discharge.append(df.I.max())
-                min_I_discharge.append(df.I.min())
-                charge_I=df_cycle.loc[df_cycle.I>=0,'I']
-                max_I_charge.append(max(charge_I))
-                min_I_charge.append(min(charge_I))  
-            
-                
-                #Cycle 1 eta azkena nabarmendu
-                if ind == 1:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], label = 'Cycle 1', linewidth=1)
-                elif ind == df_battery.cycle.unique()[-1]:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], label = f'Cycle {df_battery.cycle.unique()[-1]}', linewidth=1)
-                else:
-                    plt.plot(Q_plot, V_plot, color = colors[ind-1], linewidth=0.5)
-        
-        # Eliminación de los ciclos ruidosos (ciclos, no índices)
-        outliers_1 = detect_outliers(battery_knees, 0.05, 0.8)  # El codo nunca puede estar antes de una capacidad de carga del 0.05 ni a partir de 0.8
-        ##################### KNEES ##############################
-        # 2) Confidence curve 
-        x = df_battery.cycle.unique()
-        y = battery_knees
-
-        # Polynomial fit
-        degree = 5
-        coeffs = np.polyfit(x, y, degree)
-        p = np.poly1d(coeffs)
-
-        # Fitted values
-        y_fit = p(x)
-
-        # Residuals & degrees of freedom
-        residuals = y - y_fit
-        n = len(y)
-        m = len(coeffs)  # Number of coefficients (degree + 1)
-        dof = n - m  # Degrees of freedom
-
-        # Standard error & confidence interval
-        residual_std_error = np.std(residuals, ddof=m)
-        multiplicador = 2.5  # Aumenta para hacer que los outliers sean más lejanos
-        conf_interval = multiplicador * residual_std_error
-
-        y_upper = y_fit + conf_interval
-        y_lower = y_fit - conf_interval
-        outliers_2 = (y < y_lower) | (y > y_upper)
-
-        # Ciclos outliers
-        outlier_points_2 = df_battery.cycle.unique()[outliers_2]
-        
-        ##################### KNEES ##############################
-        x_c = df_battery.cycle.unique()
-        y_c = _Q
-
-        # Polynomial fit
-        degree = 15
-        coeffs_c = np.polyfit(x_c, y_c, degree)
-        p_c = np.poly1d(coeffs_c)
-
-        # Fitted values
-        y_fit_c = p_c(x_c)
-
-        # Residuals & degrees of freedom
-        residuals_c = y_c - y_fit_c
-        n = len(y_c)
-        m = len(coeffs_c)  # Number of coefficients (degree + 1)
-        dof = n - m  # Degrees of freedom
-
-        # Standard error & confidence interval
-        residual_std_error_c = np.std(residuals_c, ddof=m)
-        multiplicador_c = 2  # Aumenta para hacer que los outliers sean más lejanos
-        conf_interval_c = multiplicador_c * residual_std_error_c
-
-        y_upper_c = y_fit_c + conf_interval_c
-        y_lower_c = y_fit_c - conf_interval_c
-        outliers_3 = (y_c < y_lower_c) | (y_c > y_upper_c)
-
-        # Ciclos outliers
-        outlier_points_3 = df_battery.cycle.unique()[outliers_3]
-
-        total_outliers = np.concatenate([problematic_cycles, outliers_1, outlier_points_2, outlier_points_3])
-        for out in np.unique(total_outliers):
-            df_cycle = df_battery[df_battery['cycle'] == out]
-            df = df_cycle[df_cycle['I'] > 0]
-            plt.scatter(df['Qc'], df['V'], color = 'red', label = f'outlier cilclo {out}', s=0.5)
-        
-        # ------------------ BATERIAREN GRAFIKOA GORDE ------------------
-        plt.xlim(0.0, 1.1)
-
-        plt.xlabel(r'$\text{Charge capacity (Q)}$', fontsize = 14)
-        plt.ylabel(r'$\text{Voltage (V)}$', fontsize=14)
-        plt.legend()
-        plt.tight_layout()
-        
-        output_dir = './results/data_cleaning_karga_leun50/' 
-        os.makedirs(output_dir, exist_ok=True)
-        plt.savefig(f'{output_dir}{bat_ind}_MA.png')
-
-        
-        plt.clf()
-        plt.xlabel(r'$\text{Zikloak}$', fontsize = 14)
-        plt.ylabel(r'$\text{Knee}$', fontsize=14)
-        plt.scatter(df_battery.cycle.unique(), battery_knees, color='blue', s=5, label="Battery Knees")
-        plt.scatter(total_outliers, np.array(battery_knees)[(total_outliers-1).astype(int)], color='red', s=5, label="outliers Knees")
-        plt.plot(x, y_fit, label="Fitted Line", color="blue")
-        plt.fill_between(x, y_lower, y_upper, color="lightblue", alpha=0.5, label="Confidence Interval")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(f'./results/data_cleaning_karga_leun50/knee_{bat_ind}_MA.png')
-
-
-        plt.clf()
-        plt.xlabel(r'$\text{Zikloak}$', fontsize = 14)
-        plt.ylabel(r'$\text{Bateriaren kapazitatea}$', fontsize=14)
-        plt.scatter(df_battery.cycle.unique(), _Q, color='green', s=5, label="Battery capacity")
-        plt.scatter(total_outliers, np.array(_Q)[(total_outliers-1).astype(int)], color='red', s=5, label="outliers capacity")
-        plt.plot(x_c, y_fit_c, label="Fitted Line", color="green")
-        plt.fill_between(x_c, y_lower_c, y_upper_c, color="green", alpha=0.5, label="Confidence Interval")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(f'./results/data_cleaning_karga_leun50/capacity_{bat_ind}_MA.png')
-        
-        # Filtrar solo ciclos que NO sean outliers
-        new_cicle_number = 1
-        for cycle, knee, Q_value, max_Qc_value, min_Qc_value, mean_V_, std_V_, max_I_charge_, min_I_charge_, max_I_discharge_, min_I_discharge_, in zip(cycle_numbers, battery_knees, _Q, max_Qc, min_Qc, mean_V, std_V, max_I_charge, min_I_charge, max_I_discharge, min_I_discharge):
-            if cycle not in total_outliers:
-                clean_data.append([bat_ind, new_cicle_number, knee, Q_value, max_Qc_value, min_Qc_value, mean_V_, std_V_, max_I_charge_, min_I_charge_, max_I_discharge_, min_I_discharge_])
-                new_cicle_number += 1
-
-    
-    # Convertir a DataFrame final
-    df_clean = pd.DataFrame(clean_data, columns=['bat_name', 'cycle', 'knee', 'Q_value', 'max_Qc', 'min_Qc','mean_V', 'std_V', 'max_I_charge', 'min_I_charge', 'max_I_discharge', 'min_I_discharge', 'VQ_ratio_mean', 'VQ_ratio_std', 'VQ_ratio_median'])
-    
-    df_clean.to_pickle('./data/processed/NASA/DataSetRulEstimation_all_new.pkl')
-    
-    return df_clean
